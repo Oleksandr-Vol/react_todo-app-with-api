@@ -45,7 +45,7 @@ export const TodoList: React.FC<Props> = ({
                 data-cy="TodoStatus"
                 type="checkbox"
                 className="todo__status"
-                // checked={completed}
+                checked={completed}
                 onChange={handleStatusChange}
               />
             </label>
