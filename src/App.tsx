@@ -54,7 +54,7 @@ export const App: React.FC = () => {
     }
   }
 
-  async function updateTodoT(todoForUpdate: Todo) {
+  async function updateTodo(todoForUpdate: Todo) {
     try {
       await apiTodos.updateTodo(todoForUpdate);
 
@@ -126,7 +126,7 @@ export const App: React.FC = () => {
           tempTodo={tempTodo}
           onDelete={handleDelete}
           idOfDeletedTodo={idOfDeletedTodo}
-          updateTodo={updateTodoT}
+          updateTodo={updateTodo}
         />
 
         {!!todos.length && (
