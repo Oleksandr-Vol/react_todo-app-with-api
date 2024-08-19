@@ -15,7 +15,7 @@ export const App: React.FC = () => {
   const [todoStatus, setTodoStatus] = useState<Status>(Status.All);
   const [submitting, setSubmitting] = useState(false);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
-  const [idOfDeletedTodo, setIdOfDeletedTodo] = useState<number[]>([]);
+  const [waitForResponseId, setWaitForResponseId] = useState<number[]>([]);
 
   const [title, setTitle] = useState('');
 
@@ -44,18 +44,23 @@ export const App: React.FC = () => {
 
   async function deleteTodo(todoId: number) {
     try {
+      setWaitForResponseId(currentId => [...currentId, todoId]);
+
       await apiTodos.deleteTodo(todoId);
 
       setTodos(currentTodos => currentTodos.filter(todo => todo.id !== todoId));
-      setIdOfDeletedTodo([]);
     } catch (error) {
       setErrorMessage('Unable to delete a todo');
       setTimeout(resetError, 3000);
+    } finally {
+      setWaitForResponseId([]);
     }
   }
 
   async function updateTodo(todoForUpdate: Todo) {
     try {
+      setWaitForResponseId(currentId => [...currentId, todoForUpdate.id]);
+
       await apiTodos.updateTodo(todoForUpdate);
 
       setTodos(currentTodos =>
@@ -63,18 +68,14 @@ export const App: React.FC = () => {
           todo.id == todoForUpdate.id ? todoForUpdate : todo,
         ),
       );
-
-      setIdOfDeletedTodo([]);
     } catch (error) {
-      setErrorMessage('Unable to delete a todo');
+      setErrorMessage('Unable to update a todo');
       setTimeout(resetError, 3000);
+      throw error;
+    } finally {
+      setWaitForResponseId([]);
     }
   }
-
-  const handleDelete = (todoId: number) => {
-    setIdOfDeletedTodo(currentId => [...currentId, todoId]);
-    deleteTodo(todoId);
-  };
 
   const filteredTodos: Todo[] = useMemo(() => {
     return todos.filter(todo => {
@@ -115,18 +116,19 @@ export const App: React.FC = () => {
           setTitle={setTitle}
           errorMessage={errorMessage}
           setErrorMessage={setErrorMessage}
-          resetError={resetError}
           addTodo={addTodo}
           todos={todos}
           submitting={submitting}
+          updateTodo={updateTodo}
         />
 
         <TodoList
           todos={filteredTodos}
           tempTodo={tempTodo}
-          onDelete={handleDelete}
-          idOfDeletedTodo={idOfDeletedTodo}
+          onDelete={deleteTodo}
+          waitForResponseId={waitForResponseId}
           updateTodo={updateTodo}
+          errorMessage={errorMessage}
         />
 
         {!!todos.length && (
@@ -134,7 +136,7 @@ export const App: React.FC = () => {
             todos={todos}
             todoStatus={todoStatus}
             setTodoStatus={setTodoStatus}
-            onDelete={handleDelete}
+            onDelete={deleteTodo}
           />
         )}
       </div>
