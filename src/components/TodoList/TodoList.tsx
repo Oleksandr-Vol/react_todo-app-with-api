@@ -10,6 +10,10 @@ type Props = {
   waitForResponseId: number[];
   updateTodo: (todo: Todo) => Promise<void>;
   errorMessage: string;
+  setSelectedId: (id: number) => void;
+  selectedId: number;
+  setSelectedTitle: (title: string) => void;
+  selectedTitle: string;
 };
 
 export const TodoList: React.FC<Props> = ({
@@ -19,6 +23,10 @@ export const TodoList: React.FC<Props> = ({
   waitForResponseId,
   updateTodo,
   errorMessage,
+  setSelectedId,
+  selectedId,
+  setSelectedTitle,
+  selectedTitle,
 }) => (
   <section className="todoapp__main" data-cy="TodoList">
     {todos.map(todo => (
@@ -29,6 +37,10 @@ export const TodoList: React.FC<Props> = ({
         waitForResponseId={waitForResponseId}
         updateTodo={updateTodo}
         errorMessage={errorMessage}
+        setSelectedId={setSelectedId}
+        selectedId={selectedId}
+        setSelectedTitle={setSelectedTitle}
+        selectedTitle={selectedTitle}
       />
     ))}
 

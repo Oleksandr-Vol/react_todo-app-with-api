@@ -52,8 +52,6 @@ export const ChangeTodoForm: React.FC<Props> = ({
       userId: USER_ID,
       title: selectedTitle.trim(),
       completed,
-    }).then(() => {
-      resetSelected();
     });
   };
 

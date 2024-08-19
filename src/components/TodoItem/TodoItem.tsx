@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import React, { useState } from 'react';
+import React from 'react';
 import { Todo } from '../../types/Todo';
 import classNames from 'classnames';
 import { ChangeTodoForm } from '../ChangeTodoForm';
@@ -11,6 +11,10 @@ type Props = {
   waitForResponseId: number[];
   updateTodo: (todo: Todo) => Promise<void>;
   errorMessage: string;
+  setSelectedId: (id: number) => void;
+  selectedId: number;
+  setSelectedTitle: (title: string) => void;
+  selectedTitle: string;
 };
 
 export const TodoItem: React.FC<Props> = ({
@@ -19,10 +23,11 @@ export const TodoItem: React.FC<Props> = ({
   waitForResponseId,
   updateTodo,
   errorMessage,
+  setSelectedId,
+  selectedId,
+  setSelectedTitle,
+  selectedTitle,
 }) => {
-  const [selectedId, setSelectedId] = useState(0);
-  const [selectedTitle, setSelectedTitle] = useState('');
-
   const handleStatusChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     updateTodo({
       id,

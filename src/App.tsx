@@ -19,6 +19,9 @@ export const App: React.FC = () => {
 
   const [title, setTitle] = useState('');
 
+  const [selectedId, setSelectedId] = useState(0);
+  const [selectedTitle, setSelectedTitle] = useState('');
+
   function resetError() {
     setErrorMessage('');
   }
@@ -68,10 +71,11 @@ export const App: React.FC = () => {
           todo.id == todoForUpdate.id ? todoForUpdate : todo,
         ),
       );
+      setSelectedId(0);
+      setSelectedTitle('');
     } catch (error) {
       setErrorMessage('Unable to update a todo');
       setTimeout(resetError, 3000);
-      throw error;
     } finally {
       setWaitForResponseId([]);
     }
@@ -129,6 +133,10 @@ export const App: React.FC = () => {
           waitForResponseId={waitForResponseId}
           updateTodo={updateTodo}
           errorMessage={errorMessage}
+          setSelectedId={setSelectedId}
+          selectedId={selectedId}
+          setSelectedTitle={setSelectedTitle}
+          selectedTitle={selectedTitle}
         />
 
         {!!todos.length && (
