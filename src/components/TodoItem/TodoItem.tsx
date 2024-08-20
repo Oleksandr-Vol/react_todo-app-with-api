@@ -1,9 +1,8 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Todo } from '../../types/Todo';
 import classNames from 'classnames';
-import { ChangeTodoForm } from '../ChangeTodoForm';
 
 type Props = {
   todo: Todo;
@@ -28,6 +27,8 @@ export const TodoItem: React.FC<Props> = ({
   setSelectedTitle,
   selectedTitle,
 }) => {
+  const formField = useRef<HTMLInputElement>(null);
+
   const handleStatusChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     updateTodo({
       id,
@@ -41,6 +42,48 @@ export const TodoItem: React.FC<Props> = ({
     setSelectedId(id);
     setSelectedTitle(title);
   };
+
+  function resetSelected() {
+    setSelectedId(0);
+    setSelectedTitle('');
+  }
+
+  const saveChanges = () => {
+    if (selectedTitle === title) {
+      resetSelected();
+
+      return;
+    }
+
+    if (!selectedTitle.trim()) {
+      onDelete(selectedId);
+
+      return;
+    }
+
+    updateTodo({
+      id,
+      userId,
+      title: selectedTitle.trim(),
+      completed,
+    });
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    saveChanges();
+  };
+
+  const handleKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Escape') {
+      resetSelected();
+    }
+  };
+
+  useEffect(() => {
+    formField.current?.focus();
+  }, [selectedId, errorMessage]);
 
   return (
     <div
@@ -59,18 +102,19 @@ export const TodoItem: React.FC<Props> = ({
       </label>
 
       {selectedId === id ? (
-        <ChangeTodoForm
-          setSelectedId={setSelectedId}
-          selectedId={selectedId}
-          setSelectedTitle={setSelectedTitle}
-          selectedTitle={selectedTitle}
-          title={title}
-          id={id}
-          completed={completed}
-          onDelete={onDelete}
-          updateTodo={updateTodo}
-          errorMessage={errorMessage}
-        />
+        <form onSubmit={handleSubmit}>
+          <input
+            ref={formField}
+            data-cy="TodoTitleField"
+            type="text"
+            className="todo__title-field"
+            placeholder="Empty todo will be deleted"
+            value={selectedTitle}
+            onChange={event => setSelectedTitle(event.target.value)}
+            onBlur={saveChanges}
+            onKeyUp={handleKeyUp}
+          />
+        </form>
       ) : (
         <>
           <span data-cy="TodoTitle" className="todo__title">
