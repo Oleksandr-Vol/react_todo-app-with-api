@@ -61,6 +61,10 @@ export const TodoItem: React.FC<Props> = ({
       return;
     }
 
+    if (waitForResponseId.includes(id)) {
+      return;
+    }
+
     updateTodo({
       id,
       userId,

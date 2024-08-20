@@ -40,6 +40,8 @@ export const Header: React.FC<Props> = ({
           completed: !todo.completed,
         }),
       );
+
+      return;
     }
 
     todos.filter(todo => {
