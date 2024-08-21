@@ -8,7 +8,6 @@ import { Header } from './components/Header';
 import { TodoList } from './components/TodoList';
 import { Footer } from './components/Footer';
 import { ErrorNotification } from './components/ErrorNotification';
-
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [errorMessage, setErrorMessage] = useState('');
@@ -16,24 +15,15 @@ export const App: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [waitForResponseId, setWaitForResponseId] = useState<number[]>([]);
-
   const [title, setTitle] = useState('');
-
-  const [selectedId, setSelectedId] = useState(0);
-  const [selectedTitle, setSelectedTitle] = useState('');
-
   function resetError() {
     setErrorMessage('');
   }
-
   async function addTodo(todo: Omit<Todo, 'id'>) {
     try {
       setSubmitting(true);
-
       setTempTodo({ ...todo, id: 0 });
-
       const newTodo = await apiTodos.addTodo(todo);
-
       setTodos(currentTodos => [...currentTodos, newTodo]);
       setTitle('');
     } catch (error) {
@@ -44,13 +34,10 @@ export const App: React.FC = () => {
       setSubmitting(false);
     }
   }
-
   async function deleteTodo(todoId: number) {
     try {
       setWaitForResponseId(currentId => [...currentId, todoId]);
-
       await apiTodos.deleteTodo(todoId);
-
       setTodos(currentTodos => currentTodos.filter(todo => todo.id !== todoId));
     } catch (error) {
       setErrorMessage('Unable to delete a todo');
@@ -59,43 +46,38 @@ export const App: React.FC = () => {
       setWaitForResponseId([]);
     }
   }
-
   async function updateTodo(todoForUpdate: Todo) {
-    try {
-      setWaitForResponseId(currentId => [...currentId, todoForUpdate.id]);
-
-      await apiTodos.updateTodo(todoForUpdate);
-
-      setTodos(currentTodos =>
-        currentTodos.map(todo =>
-          todo.id == todoForUpdate.id ? todoForUpdate : todo,
-        ),
-      );
-      setSelectedId(0);
-      setSelectedTitle('');
-    } catch (error) {
-      setErrorMessage('Unable to update a todo');
-      setTimeout(resetError, 3000);
-    } finally {
-      setWaitForResponseId([]);
-    }
+    setWaitForResponseId(currentId => [...currentId, todoForUpdate.id]);
+    return apiTodos
+      .updateTodo(todoForUpdate)
+      .then(() => {
+        setTodos(currentTodos =>
+          currentTodos.map(todo =>
+            todo.id == todoForUpdate.id ? todoForUpdate : todo,
+          ),
+        );
+      })
+      .catch((error) => {
+        setErrorMessage('Unable to update a todo');
+        setTimeout(resetError, 3000);
+        throw error;
+      })
+      .finally(() => {
+        setWaitForResponseId([]);
+      });
   }
-
   const filteredTodos: Todo[] = useMemo(() => {
     return todos.filter(todo => {
       switch (todoStatus) {
         case Status.Active:
           return !todo.completed;
-
         case Status.Completed:
           return todo.completed;
-
         default:
           return true;
       }
     });
   }, [todos, todoStatus]);
-
   useEffect(() => {
     apiTodos
       .getTodos()
@@ -105,15 +87,12 @@ export const App: React.FC = () => {
         setTimeout(resetError, 3000);
       });
   }, []);
-
   if (!USER_ID) {
     return <UserWarning />;
   }
-
   return (
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
-
       <div className="todoapp__content">
         <Header
           title={title}
@@ -125,20 +104,13 @@ export const App: React.FC = () => {
           submitting={submitting}
           updateTodo={updateTodo}
         />
-
         <TodoList
           todos={filteredTodos}
           tempTodo={tempTodo}
           onDelete={deleteTodo}
           waitForResponseId={waitForResponseId}
           updateTodo={updateTodo}
-          errorMessage={errorMessage}
-          setSelectedId={setSelectedId}
-          selectedId={selectedId}
-          setSelectedTitle={setSelectedTitle}
-          selectedTitle={selectedTitle}
         />
-
         {!!todos.length && (
           <Footer
             todos={todos}
@@ -148,7 +120,6 @@ export const App: React.FC = () => {
           />
         )}
       </div>
-
       <ErrorNotification
         errorMessage={errorMessage}
         setErrorMessage={setErrorMessage}

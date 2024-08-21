@@ -1,145 +1,107 @@
-/* eslint-disable jsx-a11y/label-has-associated-control */
-/* eslint-disable jsx-a11y/control-has-associated-label */
-import React, { useEffect, useRef } from 'react';
-import { Todo } from '../../types/Todo';
+/* eslint-disable jsx-a11y/no-autofocus */
+import React, { useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
-
+import { Todo } from '../../types/Todo';
 type Props = {
   todo: Todo;
-  onDelete: (todoId: number) => void;
-  waitForResponseId: number[];
-  updateTodo: (todo: Todo) => Promise<void>;
-  errorMessage: string;
-  setSelectedId: (id: number) => void;
-  selectedId: number;
-  setSelectedTitle: (title: string) => void;
-  selectedTitle: string;
+  onDelete?: (id: number) => void;
+  isLoading?: boolean;
+  processingIds?: number[] | null;
+  onToggle?: (todo: Todo) => void;
+  onRename?: (todo: Todo) => Promise<void>;
 };
-
 export const TodoItem: React.FC<Props> = ({
-  todo: { id, userId, title, completed },
-  onDelete,
-  waitForResponseId,
-  updateTodo,
-  errorMessage,
-  setSelectedId,
-  selectedId,
-  setSelectedTitle,
-  selectedTitle,
+  todo,
+  onDelete = () => {},
+  onToggle = () => {},
+  onRename = () => Promise.resolve(),
+  processingIds,
 }) => {
-  const formField = useRef<HTMLInputElement>(null);
-
-  const handleStatusChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    updateTodo({
-      id,
-      userId,
-      title,
-      completed: event.target.checked,
-    });
-  };
-
-  const handleFormSwitch = () => {
-    setSelectedId(id);
-    setSelectedTitle(title);
-  };
-
-  function resetSelected() {
-    setSelectedId(0);
-    setSelectedTitle('');
-  }
-
-  const saveChanges = () => {
-    if (selectedTitle === title) {
-      resetSelected();
-
-      return;
-    }
-
-    if (!selectedTitle.trim()) {
-      onDelete(selectedId);
-
-      return;
-    }
-
-    if (waitForResponseId.includes(id)) {
-      return;
-    }
-
-    updateTodo({
-      id,
-      userId,
-      title: selectedTitle.trim(),
-      completed,
-    });
-  };
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    saveChanges();
-  };
-
-  const handleKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Escape') {
-      resetSelected();
-    }
-  };
-
+  const [isEdit, setIsEdit] = useState(false);
+  const [title, setTitle] = useState(todo.title);
+  const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    formField.current?.focus();
-  }, [selectedId, errorMessage]);
-
+    if (isEdit) {
+      inputRef.current?.focus();
+    }
+  }, [isEdit]);
+  const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(event.target.value);
+  };
+  const handleRename = (event: React.FormEvent) => {
+    event.preventDefault();
+    const normalizedTitle = title.trim();
+    if (normalizedTitle === todo.title) {
+      setIsEdit(false);
+      return;
+    }
+    if (!normalizedTitle) {
+      onDelete(todo.id);
+      return;
+    }
+    onRename({ ...todo, title: normalizedTitle }).catch(() => setIsEdit(true));
+    setIsEdit(false);
+  };
   return (
     <div
       data-cy="Todo"
-      className={classNames('todo', { completed: completed })}
-      onDoubleClick={handleFormSwitch}
+      className={classNames('todo', { completed: todo.completed })}
+      key={todo.id}
+      onDoubleClick={() => {
+        setIsEdit(true);
+        setTitle(todo.title);
+      }}
     >
       <label className="todo__status-label">
+        {''}
         <input
           data-cy="TodoStatus"
           type="checkbox"
           className="todo__status"
-          checked={completed}
-          onChange={handleStatusChange}
+          checked={todo?.completed}
+          onChange={() => onToggle({ ...todo, completed: !todo.completed })}
         />
       </label>
-
-      {selectedId === id ? (
-        <form onSubmit={handleSubmit}>
-          <input
-            ref={formField}
-            data-cy="TodoTitleField"
-            type="text"
-            className="todo__title-field"
-            placeholder="Empty todo will be deleted"
-            value={selectedTitle}
-            onChange={event => setSelectedTitle(event.target.value)}
-            onBlur={saveChanges}
-            onKeyUp={handleKeyUp}
-          />
-        </form>
-      ) : (
+      {!isEdit ? (
         <>
           <span data-cy="TodoTitle" className="todo__title">
-            {title}
+            {todo.title}
           </span>
-
           <button
             type="button"
             className="todo__remove"
             data-cy="TodoDelete"
-            onClick={() => onDelete(id)}
+            onClick={() => {
+              onDelete(todo.id);
+            }}
           >
             ×
           </button>
         </>
+      ) : (
+        <form onSubmit={handleRename}>
+          <input
+            data-cy="TodoTitleField"
+            type="text"
+            className="todo__title-field"
+            placeholder="Empty todo will be deleted"
+            value={title}
+            onChange={handleTitleChange}
+            ref={inputRef}
+            onBlur={handleRename}
+            onKeyUp={event => {
+              if (event.key === 'Escape') {
+                setIsEdit(false);
+                setTitle(todo.title);
+              }
+            }}
+          />
+        </form>
       )}
-
       <div
         data-cy="TodoLoader"
-        className={classNames('modal', 'overlay', {
-          'is-active': waitForResponseId.includes(id),
+        className={classNames('modal overlay', {
+          'is-active': processingIds?.includes(todo.id) || todo.id === 0,
         })}
       >
         <div className="modal-background has-background-white-ter" />

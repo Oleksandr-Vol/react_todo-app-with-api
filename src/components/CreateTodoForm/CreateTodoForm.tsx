@@ -21,7 +21,7 @@ export const CreateTodoForm: React.FC<Props> = ({
   todos,
   submitting,
 }) => {
-  const formField = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(event.target.value);
@@ -46,13 +46,13 @@ export const CreateTodoForm: React.FC<Props> = ({
   };
 
   useEffect(() => {
-    formField.current?.focus();
+    inputRef.current?.focus();
   }, [todos, errorMessage]);
 
   return (
     <form onSubmit={handleSubmit}>
       <input
-        ref={formField}
+        ref={inputRef}
         data-cy="NewTodoField"
         type="text"
         className="todoapp__new-todo"
