@@ -20,6 +20,7 @@ export const TodoItem: React.FC<Props> = ({
   const [isEdit, setIsEdit] = useState(false);
   const [title, setTitle] = useState(todo.title);
   const inputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (isEdit) {
       inputRef.current?.focus();
@@ -28,20 +29,27 @@ export const TodoItem: React.FC<Props> = ({
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(event.target.value);
   };
+
   const handleRename = (event: React.FormEvent) => {
     event.preventDefault();
     const normalizedTitle = title.trim();
+
     if (normalizedTitle === todo.title) {
       setIsEdit(false);
+
       return;
     }
+
     if (!normalizedTitle) {
       onDelete(todo.id);
+
       return;
     }
+
     onRename({ ...todo, title: normalizedTitle }).catch(() => setIsEdit(true));
     setIsEdit(false);
   };
+
   return (
     <div
       data-cy="Todo"

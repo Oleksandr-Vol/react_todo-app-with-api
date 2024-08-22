@@ -16,14 +16,17 @@ export const App: React.FC = () => {
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [waitForResponseId, setWaitForResponseId] = useState<number[]>([]);
   const [title, setTitle] = useState('');
+
   function resetError() {
     setErrorMessage('');
   }
+
   async function addTodo(todo: Omit<Todo, 'id'>) {
     try {
       setSubmitting(true);
       setTempTodo({ ...todo, id: 0 });
       const newTodo = await apiTodos.addTodo(todo);
+
       setTodos(currentTodos => [...currentTodos, newTodo]);
       setTitle('');
     } catch (error) {
@@ -34,6 +37,7 @@ export const App: React.FC = () => {
       setSubmitting(false);
     }
   }
+
   async function deleteTodo(todoId: number) {
     try {
       setWaitForResponseId(currentId => [...currentId, todoId]);
@@ -46,8 +50,10 @@ export const App: React.FC = () => {
       setWaitForResponseId([]);
     }
   }
+
   async function updateTodo(todoForUpdate: Todo) {
     setWaitForResponseId(currentId => [...currentId, todoForUpdate.id]);
+
     return apiTodos
       .updateTodo(todoForUpdate)
       .then(() => {
@@ -57,7 +63,7 @@ export const App: React.FC = () => {
           ),
         );
       })
-      .catch((error) => {
+      .catch(error => {
         setErrorMessage('Unable to update a todo');
         setTimeout(resetError, 3000);
         throw error;
@@ -66,6 +72,7 @@ export const App: React.FC = () => {
         setWaitForResponseId([]);
       });
   }
+
   const filteredTodos: Todo[] = useMemo(() => {
     return todos.filter(todo => {
       switch (todoStatus) {
@@ -78,6 +85,7 @@ export const App: React.FC = () => {
       }
     });
   }, [todos, todoStatus]);
+
   useEffect(() => {
     apiTodos
       .getTodos()
@@ -90,6 +98,7 @@ export const App: React.FC = () => {
   if (!USER_ID) {
     return <UserWarning />;
   }
+
   return (
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
