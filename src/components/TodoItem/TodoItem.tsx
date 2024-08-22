@@ -46,8 +46,9 @@ export const TodoItem: React.FC<Props> = ({
       return;
     }
 
-    onRename({ ...todo, title: normalizedTitle }).catch(() => setIsEdit(true));
-    setIsEdit(false);
+    onRename({ ...todo, title: normalizedTitle })
+      .then(() => setIsEdit(false))
+      .catch(() => setIsEdit(true));
   };
 
   const handleKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
