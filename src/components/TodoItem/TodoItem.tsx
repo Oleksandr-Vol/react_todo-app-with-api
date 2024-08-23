@@ -6,17 +6,17 @@ import classNames from 'classnames';
 
 type Props = {
   todo: Todo;
-  onDelete?: (id: number) => void;
-  waitForResponseIds?: number[] | null;
-  onToggle?: (todo: Todo) => void;
-  onRename?: (todo: Todo) => Promise<void>;
+  onDelete: (id: number) => void;
+  waitForResponseIds: number[];
+  onToggle: (todo: Todo) => void;
+  onRename: (todo: Todo) => Promise<void>;
 };
 
 export const TodoItem: React.FC<Props> = ({
   todo,
-  onDelete = () => {},
-  onToggle = () => {},
-  onRename = () => Promise.resolve(),
+  onDelete,
+  onToggle,
+  onRename,
   waitForResponseIds,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -113,7 +113,7 @@ export const TodoItem: React.FC<Props> = ({
       <div
         data-cy="TodoLoader"
         className={classNames('modal', 'overlay', {
-          'is-active': waitForResponseIds?.includes(todo.id) || todo.id === 0,
+          'is-active': waitForResponseIds?.includes(todo.id),
         })}
       >
         <div className="modal-background has-background-white-ter" />
